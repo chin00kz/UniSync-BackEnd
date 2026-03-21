@@ -44,6 +44,11 @@ exports.loginUser = async (req, res, next) => {
             return res.status(401).json({ success: false, error: 'Invalid credentials' });
         }
 
+        // Check if user is banned
+        if (user.isBanned) {
+            return res.status(403).json({ success: false, error: 'Your account has been banned. ' + (user.banReason || 'Please contact administration.') });
+        }
+
         // Check if password matches
         const isMatch = await user.matchPassword(password);
 
