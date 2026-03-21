@@ -10,18 +10,26 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add an email'],
         unique: true,
-        match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please add a valid email']
+        match: [/^\w+([\.-]?\w+)*@sliit\.lk$/, 'Please use a valid SLIIT email (@sliit.lk)']
     },
     password: {
         type: String,
         required: [true, 'Please add a password'],
-        minlength: 6,
+        minlength: 8,
         select: false
     },
     role: {
         type: String,
-        enum: ['user', 'admin'],
+        enum: ['user', 'admin', 'moderator', 'superadmin'],
         default: 'user'
+    },
+    isBanned: {
+        type: Boolean,
+        default: false
+    },
+    banReason: {
+        type: String,
+        required: false
     },
     sliitId: {
         type: String,
@@ -34,13 +42,17 @@ const UserSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    lastLogin: {
+        type: Date,
+        required: false
     }
 });
 
 // Encrypt password using bcrypt
-UserSchema.pre('save', async function (next) {
+UserSchema.pre('save', async function () {
     if (!this.isModified('password')) {
-        next();
+        return;
     }
 
     const salt = await bcrypt.genSalt(10);

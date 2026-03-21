@@ -14,6 +14,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/reports', require('./routes/reportRoutes'));
+app.use('/api/audit-logs', require('./routes/auditLogRoutes'));
 
 // Main route
 app.get('/', (req, res) => {
