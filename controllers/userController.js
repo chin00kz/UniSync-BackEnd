@@ -74,6 +74,30 @@ exports.loginUser = async (req, res, next) => {
 // @access  Private/Admin
 exports.updateUserRole = async (req, res, next) => {
     try {
+        const actorId = req.headers['x-admin-id'] || req.body.adminId;
+        const actor = await User.findById(actorId);
+        
+        if (!actor) {
+            return res.status(403).json({ success: false, error: 'Unauthorized: Admin ID required' });
+        }
+
+        const allowedRolesForAdmin = ['admin', 'student', 'staff'];
+        const allowedRolesForSuperAdmin = ['superadmin', 'admin', 'moderator', 'student', 'staff', 'user'];
+
+        if (actor.role === 'superadmin') {
+            // SuperAdmin can assign any role
+            if (!allowedRolesForSuperAdmin.includes(req.body.role)) {
+                return res.status(400).json({ success: false, error: 'Invalid role' });
+            }
+        } else if (actor.role === 'admin') {
+            // Admin can only assign admin, student, staff
+            if (!allowedRolesForAdmin.includes(req.body.role)) {
+                return res.status(403).json({ success: false, error: 'Regular admins can only assign Admin, Student, or Staff roles' });
+            }
+        } else {
+            return res.status(403).json({ success: false, error: 'Unauthorized role assignment' });
+        }
+
         const user = await User.findByIdAndUpdate(req.params.id, { role: req.body.role }, {
             new: true,
             runValidators: true
@@ -97,6 +121,15 @@ exports.updateUserRole = async (req, res, next) => {
 // @access  Private/Admin
 exports.banUser = async (req, res, next) => {
     try {
+        const targetUser = await User.findById(req.params.id);
+        if (!targetUser) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        if (targetUser.role === 'superadmin') {
+            return res.status(403).json({ success: false, error: 'Superadmins cannot be banned' });
+        }
+
         const user = await User.findByIdAndUpdate(req.params.id, { 
             isBanned: true, 
             banReason: req.body.reason 
@@ -123,6 +156,15 @@ exports.banUser = async (req, res, next) => {
 // @access  Private/Admin
 exports.unbanUser = async (req, res, next) => {
     try {
+        const targetUser = await User.findById(req.params.id);
+        if (!targetUser) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        if (targetUser.role === 'superadmin') {
+            return res.status(403).json({ success: false, error: 'Superadmins cannot be banned/unbanned' });
+        }
+
         const user = await User.findByIdAndUpdate(req.params.id, { 
             isBanned: false, 
             banReason: null 
@@ -173,11 +215,20 @@ exports.getDashboardStats = async (req, res, next) => {
 // @access  Private/Admin
 exports.deleteUser = async (req, res, next) => {
     try {
-        const user = await User.findByIdAndDelete(req.params.id);
-
-        if (!user) {
+        const targetUser = await User.findById(req.params.id);
+        if (!targetUser) {
             return res.status(404).json({ success: false, error: 'User not found' });
         }
+
+        if (targetUser.role === 'superadmin') {
+            const adminId = req.headers['x-admin-id'] || req.body.adminId;
+            const admin = await User.findById(adminId);
+            if (!admin || admin.role !== 'superadmin') {
+                return res.status(403).json({ success: false, error: 'Only superadmins can delete other superadmins' });
+            }
+        }
+
+        const user = await User.findByIdAndDelete(req.params.id);
 
         // Create Audit Log
         await createLog(req.headers['x-admin-id'] || req.body.adminId, 'DELETE_USER', req.params.id, 'User', `Deleted user: ${user.name} (${user.email})`);
