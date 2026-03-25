@@ -1,22 +1,30 @@
+require('dotenv').config(); // 1. Environment variables load කිරීම (මුලින්ම තිබිය යුතුයි)
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
 
-// 1. MIDDLEWARE: දත්ත වල ප්‍රමාණය පාලනය කිරීමට (Base64 images සඳහා 2MB limit එක)
+// 2. MIDDLEWARE
+// Base64 images සඳහා 2MB limit එක සහ CORS setup එක
 app.use(express.json({ limit: '2mb' })); 
 app.use(express.urlencoded({ limit: '2mb', extended: true }));
 app.use(cors());
 
-// 2. DATABASE CONNECTION: ඔයාගේ වැඩ කරපු Password එකම මෙතන තියෙනවා
-const mongoURI = 'mongodb+srv://udula:udula123456@unisync.ya6qtgg.mongodb.net/tutoring_marketplace?retryWrites=true&w=majority&appName=UniSync';
+// 3. DATABASE CONNECTION
+// .env file එකේ ඇති MONGO_URI එක පාවිච්චි කරයි
+const mongoURI = process.env.MONGO_URI;
+
+if (!mongoURI) {
+  console.error("❌ Error: MONGO_URI is not defined in .env file");
+  process.exit(1);
+}
 
 mongoose.connect(mongoURI)
-  .then(() => console.log("✅ UniSync Backend Connected to ATLAS!"))
+  .then(() => console.log("✅ UniSync Backend Connected to ATLAS via ENV!"))
   .catch(err => console.error("❌ MongoDB Connection Error:", err.message));
 
-// 3. DATA MODEL: දත්ත ගබඩා වන ආකාරය (Schema)
+// 4. DATA MODEL
 const sessionSchema = new mongoose.Schema({
   studentName: { type: String, required: true },
   questionText: { type: String, required: true },
@@ -29,7 +37,8 @@ const sessionSchema = new mongoose.Schema({
 
 const Session = mongoose.model('Session', sessionSchema);
 
-// 4. API ROUTES: Frontend එකට දත්ත ලබාදෙන සහ ලබාගන්නා ක්‍රම
+// 5. API ROUTES
+
 // GET: සියලුම Sessions ලබා ගැනීමට
 app.get('/api/sessions', async (req, res) => {
   try {
@@ -55,12 +64,14 @@ app.post('/api/sessions', async (req, res) => {
 app.patch('/api/sessions/:id', async (req, res) => {
   try {
     const updated = await Session.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updated) return res.status(404).json({ error: "Session not found" });
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: "Update failed" });
   }
 });
 
-// 5. SERVER START
-const PORT = 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+// 6. SERVER START
+// .env එකේ PORT එක නැතිනම් default 5000 පාවිච්චි කරයි
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
