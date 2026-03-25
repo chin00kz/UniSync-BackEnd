@@ -1,28 +1,20 @@
-require('dotenv').config();
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
-const connectDB = require('./config/db');
-
-// Connect to database
-connectDB();
 
 const app = express();
 
-// Middleware
+// STRICT 2MB LIMIT for Images
+app.use(express.json({ limit: '2mb' })); 
+app.use(express.urlencoded({ limit: '2mb', extended: true }));
 app.use(cors());
-app.use(express.json());
 
-// Routes
-app.use('/api/users', require('./routes/userRoutes'));
+// --- DATABASE CONNECTION ---
+const mongoURI = 'mongodb+srv://udula_admin:udula@unisync.ya6qtgg.mongodb.net/tutoring_marketplace?retryWrites=true&w=majority&appName=UniSync';
 
-// Main route
-app.get('/', (req, res) => {
-    res.json({ message: 'UniSync API is running...' });
-});
+mongoose.connect(mongoURI)
+  .then(() => console.log("✅ UniSync Backend Connected to ATLAS!"))
+  .catch(err => console.error("❌ MongoDB Connection Error:", err.message));
 
-// Port configuration
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// ... (මම කලින් දීපු schemas සහ routes මෙතනට copy කරන්න)
+app.listen(5000, () => console.log(`🚀 Server running on http://localhost:5000`));
