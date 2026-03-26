@@ -1,4 +1,4 @@
-require('dotenv').config(); // 1. Environment variables load කිරීම (මුලින්ම තිබිය යුතුයි)
+require('dotenv').config(); // 
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -6,13 +6,12 @@ const cors = require('cors');
 const app = express();
 
 // 2. MIDDLEWARE
-// Base64 images සඳහා 2MB limit එක සහ CORS setup එක
+// Base64 images  2MB limit and CORS setup 
 app.use(express.json({ limit: '2mb' })); 
 app.use(express.urlencoded({ limit: '2mb', extended: true }));
 app.use(cors());
 
 // 3. DATABASE CONNECTION
-// .env file එකේ ඇති MONGO_URI එක පාවිච්චි කරයි
 const mongoURI = process.env.MONGO_URI;
 
 if (!mongoURI) {
@@ -39,7 +38,7 @@ const Session = mongoose.model('Session', sessionSchema);
 
 // 5. API ROUTES
 
-// GET: සියලුම Sessions ලබා ගැනීමට
+// GET
 app.get('/api/sessions', async (req, res) => {
   try {
     const sessions = await Session.find().sort({ createdAt: -1 });
@@ -49,7 +48,7 @@ app.get('/api/sessions', async (req, res) => {
   }
 });
 
-// POST: අලුත් ප්‍රශ්නයක් ඇතුළත් කිරීමට
+// POST
 app.post('/api/sessions', async (req, res) => {
   try {
     const newSession = new Session(req.body);
@@ -60,7 +59,7 @@ app.post('/api/sessions', async (req, res) => {
   }
 });
 
-// PATCH: ප්‍රශ්නයකට පිළිතුරක් හෝ Status එකක් අලුත් කිරීමට
+// PATCH
 app.patch('/api/sessions/:id', async (req, res) => {
   try {
     const updated = await Session.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -72,6 +71,5 @@ app.patch('/api/sessions/:id', async (req, res) => {
 });
 
 // 6. SERVER START
-// .env එකේ PORT එක නැතිනම් default 5000 පාවිච්චි කරයි
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
