@@ -37,8 +37,10 @@ exports.loginUser = async (req, res, next) => {
             return res.status(400).json({ success: false, error: 'Please provide email and password' });
         }
 
+        const normalizedEmail = String(email).trim().toLowerCase();
+
         // Check for user
-        const user = await User.findOne({ email }).select('+password');
+        const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
         if (!user) {
             return res.status(401).json({ success: false, error: 'Invalid credentials' });

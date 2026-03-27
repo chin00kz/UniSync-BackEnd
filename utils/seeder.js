@@ -9,20 +9,34 @@ connectDB();
 
 const seedAdmin = async () => {
     try {
-        await User.deleteMany();
-
         const admin = {
             name: 'Chinookz',
-            email: 'chinookz@gmail.com',
+            email: 'chinookz@sliit.lk',
             password: '12345678',
             role: 'admin',
             sliitId: 'IT23194762',
             phone: '0710000000'
         };
 
-        await User.create(admin);
+        let existingAdmin = await User.findOne({ email: admin.email }).select('+password');
 
-        console.log('Admin data seeded successfully');
+        if (!existingAdmin) {
+            await User.create(admin);
+            console.log('Admin user created successfully');
+        } else {
+            existingAdmin.name = admin.name;
+            existingAdmin.password = admin.password;
+            existingAdmin.role = admin.role;
+            existingAdmin.sliitId = admin.sliitId;
+            existingAdmin.phone = admin.phone;
+            existingAdmin.isBanned = false;
+            existingAdmin.banReason = undefined;
+            await existingAdmin.save();
+            console.log('Admin user updated successfully');
+        }
+
+        console.log('Login email: chinookz@sliit.lk');
+        console.log('Login password: 12345678');
         process.exit();
     } catch (error) {
         console.error(`Error: ${error.message}`);
