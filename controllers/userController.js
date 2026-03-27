@@ -63,7 +63,8 @@ exports.loginUser = async (req, res, next) => {
         await user.save();
 
         // Create Audit Log for Login
-        await createLog(user._id, 'LOGIN', user._id, 'User', 'Administrator logged into the portal');
+        const roleLabel = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+        await createLog(user._id, 'LOGIN', user._id, 'User', `${roleLabel} logged into the portal`);
 
         res.status(200).json({ success: true, message: 'Logged in successfully', id: user._id, role: user.role, name: user.name, email: user.email });
     } catch (error) {
@@ -286,6 +287,24 @@ exports.updateMe = async (req, res, next) => {
 
         res.status(200).json({ success: true, data: user });
     } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
+// @desc    Get all tutors (staff role)
+// @route   GET /api/users/tutors
+// @access  Public
+exports.getTutors = async (req, res, next) => {
+    try {
+        console.log('Fetching tutors (strictly staff role)...');
+        const tutors = await User.find({ 
+            role: 'staff',
+            isBanned: false 
+        });
+        console.log(`Found ${tutors.length} staff tutors.`);
+        res.status(200).json({ success: true, count: tutors.length, data: tutors });
+    } catch (error) {
+        console.error('getTutors error:', error);
         res.status(400).json({ success: false, error: error.message });
     }
 };

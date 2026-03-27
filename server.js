@@ -2,6 +2,7 @@ require('dotenv').config(); //
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const { createLog } = require('./controllers/auditLogController');
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(cors());
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/audit-logs', require('./routes/auditLogRoutes'));
+app.use('/api/bookings', require('./routes/bookingRoutes'));
 
 // 3. DATABASE CONNECTION
 const mongoURI = process.env.MONGO_URI;
@@ -30,6 +32,7 @@ mongoose.connect(mongoURI)
 
 // 4. DATA MODEL
 const sessionSchema = new mongoose.Schema({
+  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   studentName: { type: String, required: true },
   questionText: { type: String, required: true },
   questionImage: { type: String, default: "" }, 
@@ -58,6 +61,12 @@ app.post('/api/sessions', async (req, res) => {
   try {
     const newSession = new Session(req.body);
     await newSession.save();
+    
+    // Create Audit Log if studentId is provided
+    if (req.body.studentId) {
+      await createLog(req.body.studentId, 'QUESTION_SUBMIT', newSession._id, 'Session', 'Submitted a new question to the tutor');
+    }
+    
     res.status(201).json(newSession);
   } catch (err) {
     res.status(500).json({ error: err.message });

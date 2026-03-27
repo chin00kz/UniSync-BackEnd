@@ -41,6 +41,22 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: false
     },
+    subject: {
+        type: String,
+        required: false
+    },
+    rating: {
+        type: Number,
+        default: 5.0
+    },
+    price: {
+        type: String,
+        required: false
+    },
+    avatar: {
+        type: String,
+        required: false
+    },
     createdAt: {
         type: Date,
         default: Date.now
