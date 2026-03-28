@@ -17,7 +17,7 @@ const ReportSchema = new mongoose.Schema({
     },
     contentType: {
         type: String,
-        enum: ['post', 'comment', 'user'],
+        enum: ['post', 'comment', 'user', 'material', 'tutor', 'session'],
         required: true
     },
     reason: {
