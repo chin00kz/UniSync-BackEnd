@@ -10,8 +10,8 @@ const app = express();
 connectDB();
 
 // 2. MIDDLEWARE
-app.use(express.json({ limit: '2mb' })); 
-app.use(express.urlencoded({ limit: '2mb', extended: true }));
+app.use(express.json({ limit: '5mb' })); 
+app.use(express.urlencoded({ limit: '5mb', extended: true }));
 app.use(cors());
 
 // 3. ROLE-BASED ROUTES (Clean & Organized)
@@ -22,6 +22,7 @@ app.use('/api/student', require('./routes/student'));
 // 4. COMMON ROUTES (Auth, etc.)
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/audit-logs', require('./routes/auditLogRoutes'));
+app.use('/api/sessions', require('./routes/sessionRoutes'));
 
 // 5. SERVER START
 const PORT = process.env.PORT || 5000;
