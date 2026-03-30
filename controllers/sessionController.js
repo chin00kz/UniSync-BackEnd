@@ -12,10 +12,15 @@ exports.getAllSessions = async (req, res) => {
 
 exports.createSession = async (req, res) => {
     try {
-        const { studentName, questionText, questionImage } = req.body;
-        const user = await User.findOne({ name: studentName });
+        const { studentName, studentId, questionText, questionImage } = req.body;
+        // If studentId isn't provided, try to find the user by name (legacy support)
+        let finalId = studentId;
+        if (!finalId) {
+            const user = await User.findOne({ name: studentName });
+            if (user) finalId = user._id;
+        }
         const session = await Session.create({
-            studentId: user ? user._id : null,
+            studentId: finalId,
             studentName,
             questionText,
             questionImage
