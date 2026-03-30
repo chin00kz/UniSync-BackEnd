@@ -23,6 +23,7 @@ app.use('/api/student', require('./routes/student'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/audit-logs', require('./routes/auditLogRoutes'));
 app.use('/api/sessions', require('./routes/sessionRoutes'));
+app.use('/api/settings', require('./routes/systemSettingRoutes'));
 
 // 5. SERVER START
 const PORT = process.env.PORT || 5000;

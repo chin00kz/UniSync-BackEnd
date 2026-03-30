@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const SystemSetting = require('../models/SystemSetting');
 const { createLog } = require('./auditLogController');
 
 // @desc    Get all users
@@ -56,6 +57,14 @@ exports.loginUser = async (req, res, next) => {
 
         if (!isMatch) {
             return res.status(401).json({ success: false, error: 'Invalid credentials' });
+        }
+
+        // Check Maintenance Mode
+        const maintenanceSetting = await SystemSetting.findOne({ key: 'maintenance_mode' });
+        if (maintenanceSetting && maintenanceSetting.value === true) {
+            if (!['admin', 'superadmin', 'moderator'].includes(user.role)) {
+                return res.status(403).json({ success: false, error: 'System is currently under maintenance. Only administrators can log in.' });
+            }
         }
 
         // Update last login
