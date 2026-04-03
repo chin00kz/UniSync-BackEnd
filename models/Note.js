@@ -37,6 +37,14 @@ const NoteSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add a file name']
     },
+    fileData: {
+        type: Buffer,
+        required: true
+    },
+    fileType: {
+        type: String,
+        required: true
+    },
     createdAt: {
         type: Date,
         default: Date.now
