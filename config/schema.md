@@ -16,7 +16,7 @@
     ]
   },
   {
-    "sessionId": "SES-1234567891",
+    "meetingId": "SES-1234567891",
     "lobbyId": "LOB-XYZ789",
     "hostId": "USR-TUTOR-456",
     "startedAt": "2024-03-10T10:05:00Z",
