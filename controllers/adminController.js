@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const Report = require('../models/Report');
 const AuditLog = require('../models/AuditLog');
+const Note = require('../models/Note');
+const Lobby = require('../models/Lobby');
 
 // @desc    Get comprehensive Admin Dashboard Stats
 // @route   GET /api/admin/stats
@@ -11,6 +13,10 @@ exports.getAdminStats = async (req, res) => {
         const tutorCount = await User.countDocuments({ role: 'staff' });
         const adminCount = await User.countDocuments({ role: 'admin' });
         const bannedCount = await User.countDocuments({ isBanned: true });
+        
+        // Content counts
+        const noteCount = await Note.countDocuments();
+        const lobbyCount = await Lobby.countDocuments();
         
         // Real counts for reports
         const pendingReports = await Report.countDocuments({ status: 'pending' });
@@ -30,7 +36,9 @@ exports.getAdminStats = async (req, res) => {
                     students: studentCount,
                     tutors: tutorCount,
                     admins: adminCount,
-                    banned: bannedCount
+                    banned: bannedCount,
+                    notes: noteCount,
+                    sessions: lobbyCount
                 },
                 reports: {
                     pending: pendingReports,
